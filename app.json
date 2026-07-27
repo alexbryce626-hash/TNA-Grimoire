@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "The Naked Alchemist's Grimoire",
+    "slug": "naked-alchemists-grimoire",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2B2825"
+    },
+    "android": {
+      "package": "com.nakedalchemist.grimoire"
+    },
+    "ios": {
+      "supportsTablet": true
+    }
+  }
+}
