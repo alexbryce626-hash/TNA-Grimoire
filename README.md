@@ -47,24 +47,116 @@ copy-paste.
 3. Scan it with the Expo Go app (or the phone's camera) — the app opens
    live on your phone. No build step needed for this.
 
-## Turning it into an installable Android app (APK/AAB)
+## Turning it into an installable Android app (APK)
 
-Snack itself is a live-preview sandbox, not a build service. To get a real
-installable app icon on your phone:
+Once your code is pushed to GitHub, the easiest path needs **nothing
+installed on your computer** — it all happens through Expo's website by
+connecting your GitHub repo.
 
-1. Move this project from Snack to your own machine (or export it —
-   Snack has a "Download" / "Export" option that gives you the project as
-   a zip you can `npm install` locally).
-2. Install the EAS CLI: `npm install -g eas-cli`
-3. From the project folder: `eas login`, then `eas build:configure`
-4. Run: `eas build --platform android --profile preview`
-5. EAS builds it in the cloud and gives you a link to download the `.apk`
-   directly to your phone (no Play Store submission needed for personal use).
+**One-time setup:**
 
-This part requires a free Expo account; the build itself is free for
-personal/small-scale use under Expo's free tier limits.
+1. Add the `eas.json` file included in this project to your repo (same
+   drag-and-drop-via-github.dev trick as before, if you haven't already).
+   This tells Expo's build servers to produce a plain installable `.apk`
+   file instead of the Play Store bundle format.
+2. Go to **expo.dev** and create a free account.
+3. Click **Create a project**, and when asked, choose to import from
+   GitHub — authorize Expo to access your `TNA-Grimoire` repo.
 
-## Important notes
+**Every time you want a fresh APK:**
+
+1. From your project's page on expo.dev, go to the **Builds** tab.
+2. Click **Create a build**, choose **Android**, and select the
+   **preview** profile (that's the one set up to produce an `.apk`).
+3. Pick the `main` branch. Expo builds it in the cloud — takes roughly
+   10–20 minutes.
+4. When it finishes, you get a page with a **QR code and download link**.
+   Scan it with your phone, or just open the link on your phone's
+   browser, and it downloads the `.apk` directly.
+5. Tap the downloaded file to install. Android will likely prompt you to
+   allow "install unknown apps" for your browser/file manager the first
+   time — that's expected for anything installed outside the Play Store.
+
+That's it — a real app icon on your home screen, no Play Store
+submission needed.
+
+**Alternative: from your own computer**, if you'd rather not use the
+website flow — this needs Node.js installed locally:
+```
+npm install -g eas-cli
+eas login
+git clone https://github.com/alexbryce626-hash/TNA-Grimoire.git
+cd TNA-Grimoire
+npm install
+eas build --platform android --profile preview
+```
+Same result — a download link for the `.apk` at the end.
+
+Either way, the build is free under Expo's personal-use tier (a
+reasonable number of builds per month at no cost).
+
+
+## Settings menu (gear icon)
+
+There's now a gear icon in the top-right of the header that opens a
+Settings sheet with two sections:
+
+- **Appearance** — pick from 5 color palettes (Apothecary, Botanical,
+  Blush, Midnight, Monochrome), a font (System / Serif / Monospace), and
+  a layout density (Comfortable / Compact for tighter spacing on smaller
+  screens). Changes apply instantly across every screen and are saved
+  locally, so they persist between sessions. There's a "Reset to default
+  look" link if you want to go back to the original styling.
+- **Drive Backup** — the backup URL/secret fields and status that used
+  to live on the Dashboard now live here instead, to keep the Dashboard
+  focused on your numbers.
+
+If you're updating an existing Snack/GitHub copy of this project rather
+than starting fresh, the files that changed or are new in this update
+are: `App.js`, `theme.js`, `context/DataContext.js` (unchanged from
+before, included for completeness), `context/ThemeContext.js` (new),
+`screens/Settings.js` (new), and every file in `screens/` (all updated
+to pull their colors/fonts/spacing from the new theme system instead of
+fixed values).
+
+## Automatic Google Drive backups
+
+Every save in the app (a sale, an expense, an edited recipe, a logged
+batch — anything) can now automatically push a fresh backup of your data
+to a folder in your Google Drive. This uses a small Google Apps Script
+instead of full Google OAuth, which keeps setup to a few clicks instead of
+wrestling with a Google Cloud Console project.
+
+**Setup (about 5 minutes, one time):**
+
+1. Go to **script.google.com** → **New project**.
+2. Delete the placeholder code, and paste in the contents of
+   `google-apps-script/Code.gs` from this project.
+3. In the script, change the `SECRET` constant near the top to any random
+   string of your choosing — this is what stops anyone else from writing
+   to your Drive even if they somehow found the URL.
+4. Click **Deploy → New deployment**, click the gear icon and choose
+   **Web app**. Set "Execute as" to **Me** and "Who has access" to
+   **Anyone**. Click **Deploy**, and approve the permissions prompt (it's
+   your own script asking for access to your own Drive — normal and
+   expected).
+5. Copy the **Web app URL** it gives you.
+6. In the app, open the **Dashboard** tab, tap **"Drive Backup"** to
+   expand the settings, and paste in the Web app URL and the secret you
+   chose. Tap **Save Backup Settings**.
+
+From then on, every edit anywhere in the app silently pushes an updated
+`latest.json` to a folder called **"Naked Alchemist's Grimoire Backups"**
+in your Drive, plus one dated snapshot per day so you have some history
+to fall back on. The Dashboard shows the status of the most recent backup
+("Backed up 2:14 PM", or a note if one failed), and there's a manual
+"Back up now" link if you want to force one.
+
+**Restoring from a backup:** open `latest.json` (or any dated snapshot)
+from that Drive folder, copy its contents, and it's the same JSON shape
+the app already stores locally — useful if you ever reinstall the app or
+switch phones.
+
 
 - **Data storage:** Uses `@react-native-async-storage/async-storage`
   instead of the browser storage the web version used — this is local to
