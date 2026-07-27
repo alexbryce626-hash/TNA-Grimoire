@@ -1,14 +1,17 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import {
   totalRevenue, totalExpenses, netProfit, profitMargin,
   stockPct, productDemand, fmt$,
 } from "../data";
-import { colors, radius } from "../theme";
+import { radius } from "../theme";
 
 export default function Dashboard({ goTo }) {
   const { data } = useData();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   if (!data) return null;
 
   const rev = totalRevenue(data);
@@ -44,23 +47,23 @@ export default function Dashboard({ goTo }) {
       </View>
 
       <View style={styles.metricGrid}>
-        <View style={[styles.metric, { borderColor: colors.line }]}>
+        <View style={styles.metric}>
           <Text style={styles.metricLabel}>TOTAL REVENUE</Text>
-          <Text style={[styles.metricValue, { color: colors.sageDark }]}>{fmt$(rev)}</Text>
+          <Text style={[styles.metricValue, { color: theme.colors.sageDark }]}>{fmt$(rev)}</Text>
         </View>
-        <View style={[styles.metric, { borderColor: colors.line }]}>
+        <View style={styles.metric}>
           <Text style={styles.metricLabel}>TOTAL EXPENSES</Text>
-          <Text style={[styles.metricValue, { color: colors.danger }]}>{fmt$(exp)}</Text>
+          <Text style={[styles.metricValue, { color: theme.colors.danger }]}>{fmt$(exp)}</Text>
         </View>
-        <View style={[styles.metric, { borderColor: colors.line }]}>
+        <View style={styles.metric}>
           <Text style={styles.metricLabel}>NET PROFIT</Text>
-          <Text style={[styles.metricValue, { color: profit >= 0 ? colors.sageDark : colors.danger }]}>
+          <Text style={[styles.metricValue, { color: profit >= 0 ? theme.colors.sageDark : theme.colors.danger }]}>
             {profit < 0 ? "-" : ""}{fmt$(Math.abs(profit))}
           </Text>
         </View>
-        <View style={[styles.metric, { borderColor: colors.line }]}>
+        <View style={styles.metric}>
           <Text style={styles.metricLabel}>PROFIT MARGIN</Text>
-          <Text style={[styles.metricValue, { color: margin >= 0 ? colors.sageDark : colors.danger }]}>
+          <Text style={[styles.metricValue, { color: margin >= 0 ? theme.colors.sageDark : theme.colors.danger }]}>
             {margin.toFixed(1)}%
           </Text>
         </View>
@@ -84,7 +87,7 @@ export default function Dashboard({ goTo }) {
             <View style={styles.stockBarBg}>
               <View style={[styles.stockBarFill, {
                 width: `${item.pct}%`,
-                backgroundColor: item.pct <= 15 ? colors.danger : colors.gold,
+                backgroundColor: item.pct <= 15 ? theme.colors.danger : theme.colors.gold,
               }]} />
             </View>
           </View>
@@ -104,34 +107,37 @@ export default function Dashboard({ goTo }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream, padding: 14 },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink, marginBottom: 2 },
-  desc: { fontSize: 13, color: colors.inkSoft, marginBottom: 16 },
-  dashBtnRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
-  dashBtn: {
-    flex: 1, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line,
-    borderRadius: 10, paddingVertical: 12, alignItems: "center",
-  },
-  dashBtnText: { fontSize: 11, textTransform: "uppercase", color: colors.ink, fontWeight: "600" },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 },
-  metric: {
-    width: "47%", backgroundColor: colors.paper, borderWidth: 1, borderRadius: radius, padding: 14,
-  },
-  metricLabel: { fontSize: 10, color: colors.inkSoft, textTransform: "uppercase", letterSpacing: 0.5 },
-  metricValue: { fontSize: 22, fontWeight: "700", marginTop: 4 },
-  card: {
-    backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line,
-    borderRadius: radius, padding: 16, marginBottom: 14,
-  },
-  cardTitle: { fontSize: 10.5, color: colors.inkSoft, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, fontWeight: "600" },
-  row: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line,
-  },
-  rowLabel: { fontSize: 13.5, color: colors.ink },
-  rowValue: { fontSize: 13, color: colors.ink, fontFamily: "monospace" },
-  stockBarBg: { width: 80, height: 6, borderRadius: 6, backgroundColor: colors.cream2, overflow: "hidden" },
-  stockBarFill: { height: "100%", borderRadius: 6 },
-  emptyNote: { fontSize: 13, color: colors.inkSoft, textAlign: "center", paddingVertical: 10 },
-});
+function makeStyles(theme) {
+  const c = theme.colors, d = theme.density, f = theme.fontFamily;
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.cream, padding: d.screenPadding },
+    title: { fontSize: 20 * d.fontScale, fontWeight: "700", color: c.ink, marginBottom: 2, fontFamily: f },
+    desc: { fontSize: 13 * d.fontScale, color: c.inkSoft, marginBottom: 16, fontFamily: f },
+    dashBtnRow: { flexDirection: "row", gap: d.gap, marginBottom: 16 },
+    dashBtn: {
+      flex: 1, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line,
+      borderRadius: 10, paddingVertical: 12, alignItems: "center",
+    },
+    dashBtnText: { fontSize: 11 * d.fontScale, textTransform: "uppercase", color: c.ink, fontWeight: "600", fontFamily: f },
+    metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: d.gap, marginBottom: d.cardMargin },
+    metric: {
+      width: "47%", backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding,
+    },
+    metricLabel: { fontSize: 10 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", letterSpacing: 0.5, fontFamily: f },
+    metricValue: { fontSize: 22 * d.fontScale, fontWeight: "700", marginTop: 4, fontFamily: f },
+    card: {
+      backgroundColor: c.paper, borderWidth: 1, borderColor: c.line,
+      borderRadius: radius, padding: d.cardPadding, marginBottom: d.cardMargin,
+    },
+    cardTitle: { fontSize: 10.5 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, fontWeight: "600", fontFamily: f },
+    row: {
+      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+      paddingVertical: d.rowPaddingV, borderBottomWidth: 1, borderBottomColor: c.line,
+    },
+    rowLabel: { fontSize: 13.5 * d.fontScale, color: c.ink, fontFamily: f },
+    rowValue: { fontSize: 13 * d.fontScale, color: c.ink, fontFamily: "monospace" },
+    stockBarBg: { width: 80, height: 6, borderRadius: 6, backgroundColor: c.cream2, overflow: "hidden" },
+    stockBarFill: { height: "100%", borderRadius: 6 },
+    emptyNote: { fontSize: 13 * d.fontScale, color: c.inkSoft, textAlign: "center", paddingVertical: 10, fontFamily: f },
+  });
+}

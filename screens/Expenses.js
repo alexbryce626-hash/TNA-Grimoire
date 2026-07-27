@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import { fmt$ } from "../data";
-import { colors, radius } from "../theme";
+import { radius } from "../theme";
 
 const CATS = ["Ingredients", "Equipment", "Shipping", "Other"];
 
@@ -13,6 +14,8 @@ const emptyForm = () => ({
 
 export default function Expenses({ params }) {
   const { data, update } = useData();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [showForm, setShowForm] = useState(!!params?.openForm);
   const [editIdx, setEditIdx] = useState(null);
   const [form, setForm] = useState(emptyForm());
@@ -64,16 +67,16 @@ export default function Expenses({ params }) {
 
       {showForm && (
         <View style={styles.card}>
-          <Field label="Item" value={form.item} onChangeText={(v) => setForm({ ...form, item: v })} />
-          <Field label="Date (YYYY-MM-DD)" value={form.date} onChangeText={(v) => setForm({ ...form, date: v })} />
+          <Field styles={styles} label="Item" value={form.item} onChangeText={(v) => setForm({ ...form, item: v })} />
+          <Field styles={styles} label="Date (YYYY-MM-DD)" value={form.date} onChangeText={(v) => setForm({ ...form, date: v })} />
           <Text style={styles.label}>Category</Text>
           <View style={styles.pickerWrap}>
             <Picker selectedValue={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
               {CATS.map((c) => <Picker.Item key={c} label={c} value={c} />)}
             </Picker>
           </View>
-          <Field label="Cost ($)" value={form.cost} onChangeText={(v) => setForm({ ...form, cost: v })} keyboardType="decimal-pad" />
-          <Field label="Vendor" value={form.vendor} onChangeText={(v) => setForm({ ...form, vendor: v })} />
+          <Field styles={styles} label="Cost ($)" value={form.cost} onChangeText={(v) => setForm({ ...form, cost: v })} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Vendor" value={form.vendor} onChangeText={(v) => setForm({ ...form, vendor: v })} />
           <TouchableOpacity style={styles.btnBlock} onPress={saveExpense}>
             <Text style={styles.btnBlockText}>Save Expense</Text>
           </TouchableOpacity>
@@ -108,7 +111,7 @@ export default function Expenses({ params }) {
   );
 }
 
-function Field({ label, ...props }) {
+function Field({ label, styles, ...props }) {
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -117,25 +120,28 @@ function Field({ label, ...props }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream, padding: 14 },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink, marginBottom: 2 },
-  desc: { fontSize: 13, color: colors.inkSoft, marginBottom: 16 },
-  btnBlock: { backgroundColor: colors.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
-  btnBlockText: { color: colors.paper, fontWeight: "600", fontSize: 12, textTransform: "uppercase" },
-  card: { backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 16, marginBottom: 14 },
-  label: { fontSize: 10, color: colors.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600" },
-  input: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 9, fontSize: 14, backgroundColor: colors.paper, color: colors.ink },
-  pickerWrap: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper },
-  chip: { borderWidth: 1, borderColor: colors.line, borderRadius: 20, paddingVertical: 6, paddingHorizontal: 12, marginRight: 6, backgroundColor: colors.paper },
-  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
-  chipText: { fontSize: 10.5, textTransform: "uppercase", color: colors.inkSoft },
-  chipTextActive: { color: colors.paper },
-  emptyNote: { fontSize: 13, color: colors.inkSoft, textAlign: "center", paddingVertical: 14 },
-  expenseCard: { flexDirection: "row", justifyContent: "space-between", backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 14, marginBottom: 10 },
-  expenseItem: { fontSize: 14, fontWeight: "600", color: colors.ink },
-  expenseSub: { fontSize: 11, color: colors.inkSoft, marginTop: 2 },
-  expenseCost: { fontFamily: "monospace", fontSize: 14, color: colors.ink, fontWeight: "600" },
-  iconBtn: { fontSize: 15, color: colors.inkSoft },
-  iconBtnDel: { fontSize: 18, color: colors.clay },
-});
+function makeStyles(theme) {
+  const c = theme.colors, d = theme.density, f = theme.fontFamily;
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.cream, padding: d.screenPadding },
+    title: { fontSize: 20 * d.fontScale, fontWeight: "700", color: c.ink, marginBottom: 2, fontFamily: f },
+    desc: { fontSize: 13 * d.fontScale, color: c.inkSoft, marginBottom: 16, fontFamily: f },
+    btnBlock: { backgroundColor: c.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
+    btnBlockText: { color: c.paper, fontWeight: "600", fontSize: 12 * d.fontScale, textTransform: "uppercase", fontFamily: f },
+    card: { backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.cardMargin },
+    label: { fontSize: 10 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600", fontFamily: f },
+    input: { borderWidth: 1, borderColor: c.line, borderRadius: 8, padding: 9, fontSize: 14 * d.fontScale, backgroundColor: c.paper, color: c.ink, fontFamily: f },
+    pickerWrap: { borderWidth: 1, borderColor: c.line, borderRadius: 8, backgroundColor: c.paper },
+    chip: { borderWidth: 1, borderColor: c.line, borderRadius: 20, paddingVertical: 6, paddingHorizontal: 12, marginRight: 6, backgroundColor: c.paper },
+    chipActive: { backgroundColor: c.ink, borderColor: c.ink },
+    chipText: { fontSize: 10.5 * d.fontScale, textTransform: "uppercase", color: c.inkSoft, fontFamily: f },
+    chipTextActive: { color: c.paper },
+    emptyNote: { fontSize: 13 * d.fontScale, color: c.inkSoft, textAlign: "center", paddingVertical: 14, fontFamily: f },
+    expenseCard: { flexDirection: "row", justifyContent: "space-between", backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.gap },
+    expenseItem: { fontSize: 14 * d.fontScale, fontWeight: "600", color: c.ink, fontFamily: f },
+    expenseSub: { fontSize: 11 * d.fontScale, color: c.inkSoft, marginTop: 2, fontFamily: f },
+    expenseCost: { fontFamily: "monospace", fontSize: 14 * d.fontScale, color: c.ink, fontWeight: "600" },
+    iconBtn: { fontSize: 15, color: c.inkSoft },
+    iconBtnDel: { fontSize: 18, color: c.clay },
+  });
+}

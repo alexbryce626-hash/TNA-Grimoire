@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import { computeRecipe, fmt$, fmtNum } from "../data";
-import { colors, radius } from "../theme";
+import { radius } from "../theme";
 
 export default function Recipes() {
   const { data, update } = useData();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [openIdx, setOpenIdx] = useState(null);
   const [editIdx, setEditIdx] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -73,9 +76,9 @@ export default function Recipes() {
             {(openIdx === i || isEditing) && (
               isEditing ? (
                 <View style={{ marginTop: 12 }}>
-                  <Row2>
-                    <Field label="Batch Yield" value={String(draft.batchYield)} onChangeText={(v) => setDraft({ ...draft, batchYield: v })} keyboardType="number-pad" />
-                    <Field label="Retail Price ($)" value={String(draft.retailPrice)} onChangeText={(v) => setDraft({ ...draft, retailPrice: v })} keyboardType="decimal-pad" />
+                  <Row2 styles={styles}>
+                    <Field styles={styles} label="Batch Yield" value={String(draft.batchYield)} onChangeText={(v) => setDraft({ ...draft, batchYield: v })} keyboardType="number-pad" />
+                    <Field styles={styles} label="Retail Price ($)" value={String(draft.retailPrice)} onChangeText={(v) => setDraft({ ...draft, retailPrice: v })} keyboardType="decimal-pad" />
                   </Row2>
 
                   <Text style={styles.sectionDivider}>ESSENTIAL OILS</Text>
@@ -107,8 +110,8 @@ export default function Recipes() {
                   </TouchableOpacity>
 
                   <Text style={styles.sectionDivider}>LYE &amp; WATER</Text>
-                  <Field label="Lye (g)" value={String(draft.lye)} onChangeText={(v) => setDraft({ ...draft, lye: v })} keyboardType="decimal-pad" />
-                  <Field label="Water (g)" value={String(draft.water)} onChangeText={(v) => setDraft({ ...draft, water: v })} keyboardType="decimal-pad" />
+                  <Field styles={styles} label="Lye (g)" value={String(draft.lye)} onChangeText={(v) => setDraft({ ...draft, lye: v })} keyboardType="decimal-pad" />
+                  <Field styles={styles} label="Water (g)" value={String(draft.water)} onChangeText={(v) => setDraft({ ...draft, water: v })} keyboardType="decimal-pad" />
 
                   <Text style={styles.sectionDivider}>FAT OILS</Text>
                   {draft.fats.map((o, fi) => (
@@ -130,8 +133,8 @@ export default function Recipes() {
                   ))}
 
                   <Text style={styles.sectionDivider}>PACKAGING</Text>
-                  <Field label="Label ($)" value={String(draft.label)} onChangeText={(v) => setDraft({ ...draft, label: v })} keyboardType="decimal-pad" />
-                  <Field label="Parchment (sheets)" value={String(draft.parchment)} onChangeText={(v) => setDraft({ ...draft, parchment: v })} keyboardType="decimal-pad" />
+                  <Field styles={styles} label="Label ($)" value={String(draft.label)} onChangeText={(v) => setDraft({ ...draft, label: v })} keyboardType="decimal-pad" />
+                  <Field styles={styles} label="Parchment (sheets)" value={String(draft.parchment)} onChangeText={(v) => setDraft({ ...draft, parchment: v })} keyboardType="decimal-pad" />
 
                   <TouchableOpacity style={styles.btnBlock} onPress={saveEdit}>
                     <Text style={styles.btnBlockText}>Save Recipe</Text>
@@ -168,10 +171,10 @@ export default function Recipes() {
   );
 }
 
-function Row2({ children }) {
+function Row2({ children, styles }) {
   return <View style={{ flexDirection: "row", gap: 10 }}>{children.map((c, i) => <View key={i} style={{ flex: 1 }}>{c}</View>)}</View>;
 }
-function Field({ label, ...props }) {
+function Field({ label, styles, ...props }) {
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -180,30 +183,33 @@ function Field({ label, ...props }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream, padding: 14 },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink, marginBottom: 2 },
-  desc: { fontSize: 13, color: colors.inkSoft, marginBottom: 16 },
-  card: { backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 16, marginBottom: 12 },
-  head: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  swatch: { width: 12, height: 12, borderRadius: 6 },
-  recipeName: { fontSize: 16.5, fontWeight: "700", color: colors.ink },
-  recipeSub: { fontSize: 10.5, color: colors.inkSoft },
-  marginText: { fontSize: 11, color: colors.sageDark, textAlign: "right" },
-  iconBtn: { fontSize: 16, color: colors.inkSoft, paddingHorizontal: 6 },
-  iconBtnDel: { fontSize: 18, color: colors.clay, paddingHorizontal: 6 },
-  sectionDivider: { fontSize: 10.5, color: colors.inkSoft, textTransform: "uppercase", letterSpacing: 1, marginTop: 16, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: colors.line, paddingBottom: 6 },
-  ingLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.line, borderStyle: "dashed" },
-  ingLineLabel: { fontSize: 12.5, color: colors.ink },
-  ingLineValue: { fontFamily: "monospace", fontSize: 12.5, color: colors.ink },
-  totalsRow: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 6, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.line },
-  totalsText: { fontFamily: "monospace", fontSize: 12, color: colors.ink, fontWeight: "600" },
-  label: { fontSize: 10, color: colors.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600" },
-  input: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 9, fontSize: 14, backgroundColor: colors.paper, color: colors.ink },
-  pickerWrap: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper },
-  ingEditRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-  smallBtn: { alignSelf: "flex-start", borderWidth: 1, borderColor: colors.line, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginTop: 8 },
-  smallBtnText: { fontSize: 10.5, textTransform: "uppercase", color: colors.ink },
-  btnBlock: { backgroundColor: colors.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginTop: 16 },
-  btnBlockText: { color: colors.paper, fontWeight: "600", fontSize: 12, textTransform: "uppercase" },
-});
+function makeStyles(theme) {
+  const c = theme.colors, d = theme.density, f = theme.fontFamily;
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.cream, padding: d.screenPadding },
+    title: { fontSize: 20 * d.fontScale, fontWeight: "700", color: c.ink, marginBottom: 2, fontFamily: f },
+    desc: { fontSize: 13 * d.fontScale, color: c.inkSoft, marginBottom: 16, fontFamily: f },
+    card: { backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.gap },
+    head: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    swatch: { width: 12, height: 12, borderRadius: 6 },
+    recipeName: { fontSize: 16.5 * d.fontScale, fontWeight: "700", color: c.ink, fontFamily: f },
+    recipeSub: { fontSize: 10.5 * d.fontScale, color: c.inkSoft, fontFamily: f },
+    marginText: { fontSize: 11 * d.fontScale, color: c.sageDark, textAlign: "right", fontFamily: f },
+    iconBtn: { fontSize: 16, color: c.inkSoft, paddingHorizontal: 6 },
+    iconBtnDel: { fontSize: 18, color: c.clay, paddingHorizontal: 6 },
+    sectionDivider: { fontSize: 10.5 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", letterSpacing: 1, marginTop: 16, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: c.line, paddingBottom: 6, fontFamily: f },
+    ingLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: c.line, borderStyle: "dashed" },
+    ingLineLabel: { fontSize: 12.5 * d.fontScale, color: c.ink, fontFamily: f },
+    ingLineValue: { fontFamily: "monospace", fontSize: 12.5 * d.fontScale, color: c.ink },
+    totalsRow: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 6, marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: c.line },
+    totalsText: { fontFamily: "monospace", fontSize: 12 * d.fontScale, color: c.ink, fontWeight: "600" },
+    label: { fontSize: 10 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600", fontFamily: f },
+    input: { borderWidth: 1, borderColor: c.line, borderRadius: 8, padding: 9, fontSize: 14 * d.fontScale, backgroundColor: c.paper, color: c.ink, fontFamily: f },
+    pickerWrap: { borderWidth: 1, borderColor: c.line, borderRadius: 8, backgroundColor: c.paper },
+    ingEditRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+    smallBtn: { alignSelf: "flex-start", borderWidth: 1, borderColor: c.line, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginTop: 8 },
+    smallBtnText: { fontSize: 10.5 * d.fontScale, textTransform: "uppercase", color: c.ink, fontFamily: f },
+    btnBlock: { backgroundColor: c.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginTop: 16 },
+    btnBlockText: { color: c.paper, fontWeight: "600", fontSize: 12 * d.fontScale, textTransform: "uppercase", fontFamily: f },
+  });
+}

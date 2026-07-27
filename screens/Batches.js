@@ -1,26 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import {
   addDays, addMonths, getMicaMaterialName, applyConsumption, fmtNum,
 } from "../data";
-import { colors, radius } from "../theme";
+import { radius } from "../theme";
 
 const API_KEY_STORAGE = "anthropic-api-key";
 
 function defaultWeightsForRecipe(recipe) {
   if (!recipe) return {};
   const w = { lye: recipe.lye, water: recipe.water };
-  recipe.fats.forEach((f) => { w[f.name] = f.amt; });
+  recipe.fats.forEach((fo) => { w[fo.name] = fo.amt; });
   recipe.oils.forEach((o) => { w[o.name] = o.amt; });
   return w;
 }
 
 export default function Batches({ params }) {
   const { data, update } = useData();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [showForm, setShowForm] = useState(!!params?.openForm);
   const [openIdx, setOpenIdx] = useState(null);
   const [apiKey, setApiKey] = useState("");
@@ -207,8 +210,8 @@ Leave unclear fields empty/null — do not guess.` },
             {scanStatus && <Text style={styles.scanNote}>{scanStatus}</Text>}
           </View>
 
-          <Field label="Lot ID" value={form.lot} onChangeText={(v) => setForm({ ...form, lot: v })} placeholder="e.g. VE002" />
-          <Field label="Batch Date (YYYY-MM-DD)" value={form.date} onChangeText={onDateChange} />
+          <Field styles={styles} label="Lot ID" value={form.lot} onChangeText={(v) => setForm({ ...form, lot: v })} placeholder="e.g. VE002" />
+          <Field styles={styles} label="Batch Date (YYYY-MM-DD)" value={form.date} onChangeText={onDateChange} />
 
           <Text style={styles.label}>Scent / Recipe</Text>
           <View style={styles.pickerWrap}>
@@ -217,20 +220,21 @@ Leave unclear fields empty/null — do not guess.` },
             </Picker>
           </View>
 
-          <Field label="Yield (bars)" value={form.yield} onChangeText={(v) => setForm({ ...form, yield: v })} keyboardType="number-pad" />
-          <Field label="Demold Date (auto: +3 days)" value={form.demoldDate} onChangeText={(v) => setForm({ ...form, demoldDate: v })} />
-          <Field label="Full Cure Date (auto: +4 months)" value={form.fullCureDate} onChangeText={(v) => setForm({ ...form, fullCureDate: v })} />
+          <Field styles={styles} label="Yield (bars)" value={form.yield} onChangeText={(v) => setForm({ ...form, yield: v })} keyboardType="number-pad" />
+          <Field styles={styles} label="Demold Date (auto: +3 days)" value={form.demoldDate} onChangeText={(v) => setForm({ ...form, demoldDate: v })} />
+          <Field styles={styles} label="Full Cure Date (auto: +4 months)" value={form.fullCureDate} onChangeText={(v) => setForm({ ...form, fullCureDate: v })} />
 
           <Text style={styles.sectionDivider}>INGREDIENT WEIGHTS</Text>
-          <Field label="Lye Weight (g)" value={String(form.weights.lye ?? "")} onChangeText={(v) => setWeight("lye", v)} keyboardType="decimal-pad" />
-          <Field label="Water Weight (g)" value={String(form.weights.water ?? "")} onChangeText={(v) => setWeight("water", v)} keyboardType="decimal-pad" />
-          <Field label="Shea Butter Weight (g)" value={String(form.weights["Shea Butter"] ?? "")} onChangeText={(v) => setWeight("Shea Butter", v)} keyboardType="decimal-pad" />
-          <Field label="Coconut Oil Weight (g)" value={String(form.weights["coconut oil"] ?? "")} onChangeText={(v) => setWeight("coconut oil", v)} keyboardType="decimal-pad" />
-          <Field label="Olive Oil Weight (g)" value={String(form.weights["olive oil"] ?? "")} onChangeText={(v) => setWeight("olive oil", v)} keyboardType="decimal-pad" />
-          <Field label="Castor Oil Weight (g)" value={String(form.weights["castor oil"] ?? "")} onChangeText={(v) => setWeight("castor oil", v)} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Lye Weight (g)" value={String(form.weights.lye ?? "")} onChangeText={(v) => setWeight("lye", v)} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Water Weight (g)" value={String(form.weights.water ?? "")} onChangeText={(v) => setWeight("water", v)} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Shea Butter Weight (g)" value={String(form.weights["Shea Butter"] ?? "")} onChangeText={(v) => setWeight("Shea Butter", v)} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Coconut Oil Weight (g)" value={String(form.weights["coconut oil"] ?? "")} onChangeText={(v) => setWeight("coconut oil", v)} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Olive Oil Weight (g)" value={String(form.weights["olive oil"] ?? "")} onChangeText={(v) => setWeight("olive oil", v)} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Castor Oil Weight (g)" value={String(form.weights["castor oil"] ?? "")} onChangeText={(v) => setWeight("castor oil", v)} keyboardType="decimal-pad" />
           {recipe && recipe.oils.map((o, i) => (
             <Field
               key={o.name}
+              styles={styles}
               label={`Essential Oil ${i + 1} Weight (${o.name})`}
               value={String(form.weights[o.name] ?? "")}
               onChangeText={(v) => setWeight(o.name, v)}
@@ -238,7 +242,7 @@ Leave unclear fields empty/null — do not guess.` },
             />
           ))}
           {micaName && (
-            <Field label={`Mica Weight (${micaName})`} value={String(form.weights.mica ?? "0")} onChangeText={(v) => setWeight("mica", v)} keyboardType="decimal-pad" />
+            <Field styles={styles} label={`Mica Weight (${micaName})`} value={String(form.weights.mica ?? "0")} onChangeText={(v) => setWeight("mica", v)} keyboardType="decimal-pad" />
           )}
 
           <Text style={styles.label}>Notes / Remarks</Text>
@@ -293,7 +297,7 @@ Leave unclear fields empty/null — do not guess.` },
   );
 }
 
-function Field({ label, ...props }) {
+function Field({ label, styles, ...props }) {
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -302,31 +306,34 @@ function Field({ label, ...props }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream, padding: 14 },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink, marginBottom: 2 },
-  desc: { fontSize: 13, color: colors.inkSoft, marginBottom: 16 },
-  btnBlock: { backgroundColor: colors.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
-  btnBlockText: { color: colors.paper, fontWeight: "600", fontSize: 12, textTransform: "uppercase" },
-  btnSecondary: { borderWidth: 1, borderColor: colors.line, borderRadius: 9, paddingVertical: 10, alignItems: "center" },
-  btnSecondaryText: { color: colors.ink, fontWeight: "600", fontSize: 12 },
-  card: { backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 16, marginBottom: 14 },
-  keyToggle: { fontSize: 11.5, color: colors.inkSoft, marginBottom: 8 },
-  scanBox: { borderWidth: 1.5, borderColor: colors.line, borderStyle: "dashed", borderRadius: 12, padding: 14, marginBottom: 8, backgroundColor: colors.cream },
-  scanNote: { fontSize: 11.5, color: colors.inkSoft, marginTop: 8, textAlign: "center" },
-  label: { fontSize: 10, color: colors.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600" },
-  input: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 9, fontSize: 14, backgroundColor: colors.paper, color: colors.ink },
-  pickerWrap: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper },
-  sectionDivider: { fontSize: 10.5, color: colors.inkSoft, letterSpacing: 1, marginTop: 16, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: colors.line, paddingBottom: 6, fontWeight: "600" },
-  emptyNote: { fontSize: 13, color: colors.inkSoft, textAlign: "center", paddingVertical: 14 },
-  batchCard: { backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 14, marginBottom: 10 },
-  batchHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  swatch: { width: 12, height: 12, borderRadius: 6 },
-  batchName: { fontSize: 15, fontWeight: "600", color: colors.ink },
-  batchSub: { fontSize: 11, color: colors.inkSoft },
-  iconBtnDel: { fontSize: 18, color: colors.clay },
-  ingLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.line },
-  ingLineLabel: { fontSize: 12.5, color: colors.ink },
-  ingLineValue: { fontFamily: "monospace", fontSize: 12.5, color: colors.ink },
-  notesText: { fontSize: 13, color: colors.inkSoft },
-});
+function makeStyles(theme) {
+  const c = theme.colors, d = theme.density, f = theme.fontFamily;
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.cream, padding: d.screenPadding },
+    title: { fontSize: 20 * d.fontScale, fontWeight: "700", color: c.ink, marginBottom: 2, fontFamily: f },
+    desc: { fontSize: 13 * d.fontScale, color: c.inkSoft, marginBottom: 16, fontFamily: f },
+    btnBlock: { backgroundColor: c.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
+    btnBlockText: { color: c.paper, fontWeight: "600", fontSize: 12 * d.fontScale, textTransform: "uppercase", fontFamily: f },
+    btnSecondary: { borderWidth: 1, borderColor: c.line, borderRadius: 9, paddingVertical: 10, alignItems: "center" },
+    btnSecondaryText: { color: c.ink, fontWeight: "600", fontSize: 12 * d.fontScale, fontFamily: f },
+    card: { backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.cardMargin },
+    keyToggle: { fontSize: 11.5 * d.fontScale, color: c.inkSoft, marginBottom: 8, fontFamily: f },
+    scanBox: { borderWidth: 1.5, borderColor: c.line, borderStyle: "dashed", borderRadius: 12, padding: 14, marginBottom: 8, backgroundColor: c.cream },
+    scanNote: { fontSize: 11.5 * d.fontScale, color: c.inkSoft, marginTop: 8, textAlign: "center", fontFamily: f },
+    label: { fontSize: 10 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600", fontFamily: f },
+    input: { borderWidth: 1, borderColor: c.line, borderRadius: 8, padding: 9, fontSize: 14 * d.fontScale, backgroundColor: c.paper, color: c.ink, fontFamily: f },
+    pickerWrap: { borderWidth: 1, borderColor: c.line, borderRadius: 8, backgroundColor: c.paper },
+    sectionDivider: { fontSize: 10.5 * d.fontScale, color: c.inkSoft, letterSpacing: 1, marginTop: 16, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: c.line, paddingBottom: 6, fontWeight: "600", fontFamily: f },
+    emptyNote: { fontSize: 13 * d.fontScale, color: c.inkSoft, textAlign: "center", paddingVertical: 14, fontFamily: f },
+    batchCard: { backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.gap },
+    batchHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    swatch: { width: 12, height: 12, borderRadius: 6 },
+    batchName: { fontSize: 15 * d.fontScale, fontWeight: "600", color: c.ink, fontFamily: f },
+    batchSub: { fontSize: 11 * d.fontScale, color: c.inkSoft, fontFamily: f },
+    iconBtnDel: { fontSize: 18, color: c.clay },
+    ingLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: c.line },
+    ingLineLabel: { fontSize: 12.5 * d.fontScale, color: c.ink, fontFamily: f },
+    ingLineValue: { fontFamily: "monospace", fontSize: 12.5 * d.fontScale, color: c.ink },
+    notesText: { fontSize: 13 * d.fontScale, color: c.inkSoft, fontFamily: f },
+  });
+}

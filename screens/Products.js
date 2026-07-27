@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { useData } from "../context/DataContext";
-import { colors, radius } from "../theme";
+import { useTheme } from "../context/ThemeContext";
+import { radius } from "../theme";
 
 export default function Products() {
   const { data, update } = useData();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [editIdx, setEditIdx] = useState(null);
   const [draft, setDraft] = useState(null);
 
@@ -36,10 +39,10 @@ export default function Products() {
             {editIdx === i ? (
               <View>
                 <Text style={styles.lockedName}>{p.name} (name locked)</Text>
-                <Field label="Base Profile" value={draft.base} onChangeText={(v) => setDraft({ ...draft, base: v })} />
-                <Field label="Mica Color Used" value={draft.mica} onChangeText={(v) => setDraft({ ...draft, mica: v })} />
-                <Field label="Tagline" value={draft.tagline} onChangeText={(v) => setDraft({ ...draft, tagline: v })} />
-                <Field label="Swatch Color (hex)" value={draft.color} onChangeText={(v) => setDraft({ ...draft, color: v })} />
+                <Field styles={styles} label="Base Profile" value={draft.base} onChangeText={(v) => setDraft({ ...draft, base: v })} />
+                <Field styles={styles} label="Mica Color Used" value={draft.mica} onChangeText={(v) => setDraft({ ...draft, mica: v })} />
+                <Field styles={styles} label="Tagline" value={draft.tagline} onChangeText={(v) => setDraft({ ...draft, tagline: v })} />
+                <Field styles={styles} label="Swatch Color (hex)" value={draft.color} onChangeText={(v) => setDraft({ ...draft, color: v })} />
                 <Text style={styles.label}>Description</Text>
                 <TextInput
                   style={[styles.input, { height: 80, textAlignVertical: "top" }]}
@@ -74,7 +77,7 @@ export default function Products() {
   );
 }
 
-function Field({ label, ...props }) {
+function Field({ label, styles, ...props }) {
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -83,22 +86,25 @@ function Field({ label, ...props }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream, padding: 14 },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink, marginBottom: 2 },
-  desc: { fontSize: 13, color: colors.inkSoft, marginBottom: 16 },
-  card: { flexDirection: "row", gap: 12, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 16, marginBottom: 12 },
-  swatch: { width: 36, height: 36, borderRadius: 18, marginTop: 2 },
-  base: { fontSize: 9.5, color: colors.inkSoft, textTransform: "uppercase" },
-  name: { fontSize: 17, fontWeight: "700", color: colors.ink },
-  tagline: { fontSize: 10.5, color: colors.clayDark, textTransform: "uppercase", marginVertical: 6 },
-  descText: { fontSize: 13, color: colors.inkSoft, lineHeight: 19 },
-  iconBtn: { fontSize: 16, color: colors.inkSoft },
-  lockedName: { fontSize: 11, color: colors.inkSoft, marginBottom: 4 },
-  label: { fontSize: 10, color: colors.inkSoft, textTransform: "uppercase", marginTop: 8, marginBottom: 4, fontWeight: "600" },
-  input: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 9, fontSize: 14, backgroundColor: colors.paper, color: colors.ink },
-  btnBlock: { backgroundColor: colors.ink, borderRadius: 9, paddingVertical: 10, alignItems: "center" },
-  btnBlockText: { color: colors.paper, fontWeight: "600", fontSize: 12, textTransform: "uppercase" },
-  btnSecondary: { borderWidth: 1, borderColor: colors.line, borderRadius: 9, paddingVertical: 10, alignItems: "center" },
-  btnSecondaryText: { color: colors.ink, fontWeight: "600", fontSize: 12, textTransform: "uppercase" },
-});
+function makeStyles(theme) {
+  const c = theme.colors, d = theme.density, f = theme.fontFamily;
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.cream, padding: d.screenPadding },
+    title: { fontSize: 20 * d.fontScale, fontWeight: "700", color: c.ink, marginBottom: 2, fontFamily: f },
+    desc: { fontSize: 13 * d.fontScale, color: c.inkSoft, marginBottom: 16, fontFamily: f },
+    card: { flexDirection: "row", gap: 12, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.gap },
+    swatch: { width: 36, height: 36, borderRadius: 18, marginTop: 2 },
+    base: { fontSize: 9.5 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", fontFamily: f },
+    name: { fontSize: 17 * d.fontScale, fontWeight: "700", color: c.ink, fontFamily: f },
+    tagline: { fontSize: 10.5 * d.fontScale, color: c.clayDark, textTransform: "uppercase", marginVertical: 6, fontFamily: f },
+    descText: { fontSize: 13 * d.fontScale, color: c.inkSoft, lineHeight: 19, fontFamily: f },
+    iconBtn: { fontSize: 16, color: c.inkSoft },
+    lockedName: { fontSize: 11 * d.fontScale, color: c.inkSoft, marginBottom: 4, fontFamily: f },
+    label: { fontSize: 10 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", marginTop: 8, marginBottom: 4, fontWeight: "600", fontFamily: f },
+    input: { borderWidth: 1, borderColor: c.line, borderRadius: 8, padding: 9, fontSize: 14 * d.fontScale, backgroundColor: c.paper, color: c.ink, fontFamily: f },
+    btnBlock: { backgroundColor: c.ink, borderRadius: 9, paddingVertical: 10, alignItems: "center" },
+    btnBlockText: { color: c.paper, fontWeight: "600", fontSize: 12 * d.fontScale, textTransform: "uppercase", fontFamily: f },
+    btnSecondary: { borderWidth: 1, borderColor: c.line, borderRadius: 9, paddingVertical: 10, alignItems: "center" },
+    btnSecondaryText: { color: c.ink, fontWeight: "600", fontSize: 12 * d.fontScale, textTransform: "uppercase", fontFamily: f },
+  });
+}

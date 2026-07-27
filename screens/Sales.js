@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import { packingCost, fmt$, PACK_SAMPLE, PACK_CUSTOM } from "../data";
-import { colors, radius } from "../theme";
+import { radius } from "../theme";
 
 const emptyForm = (data) => ({
   date: new Date().toISOString().slice(0, 10),
@@ -21,6 +22,8 @@ const emptyForm = (data) => ({
 
 export default function Sales({ params }) {
   const { data, update } = useData();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [showForm, setShowForm] = useState(!!params?.openForm);
   const [editIdx, setEditIdx] = useState(null);
   const [form, setForm] = useState(data ? emptyForm(data) : null);
@@ -128,10 +131,10 @@ export default function Sales({ params }) {
             </View>
           )}
 
-          <Field label="Date (YYYY-MM-DD)" value={form.date} onChangeText={(v) => setForm({ ...form, date: v })} />
-          <Field label="Qty (packs)" value={form.qty} onChangeText={(v) => setForm({ ...form, qty: v })} keyboardType="number-pad" />
-          <Field label="Batch ID" value={form.batch} onChangeText={(v) => setForm({ ...form, batch: v })} />
-          <Field label="Unit Price ($)" value={form.unitPrice} onChangeText={(v) => setForm({ ...form, unitPrice: v })} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Date (YYYY-MM-DD)" value={form.date} onChangeText={(v) => setForm({ ...form, date: v })} />
+          <Field styles={styles} label="Qty (packs)" value={form.qty} onChangeText={(v) => setForm({ ...form, qty: v })} keyboardType="number-pad" />
+          <Field styles={styles} label="Batch ID" value={form.batch} onChangeText={(v) => setForm({ ...form, batch: v })} />
+          <Field styles={styles} label="Unit Price ($)" value={form.unitPrice} onChangeText={(v) => setForm({ ...form, unitPrice: v })} keyboardType="decimal-pad" />
 
           <Text style={styles.label}>Box Size</Text>
           <View style={styles.pickerWrap}>
@@ -142,8 +145,8 @@ export default function Sales({ params }) {
             </Picker>
           </View>
 
-          <Field label="Shipping Cost ($)" value={form.shippingCost} onChangeText={(v) => setForm({ ...form, shippingCost: v })} keyboardType="decimal-pad" />
-          <Field label="Sales Channel" value={form.channel} onChangeText={(v) => setForm({ ...form, channel: v })} />
+          <Field styles={styles} label="Shipping Cost ($)" value={form.shippingCost} onChangeText={(v) => setForm({ ...form, shippingCost: v })} keyboardType="decimal-pad" />
+          <Field styles={styles} label="Sales Channel" value={form.channel} onChangeText={(v) => setForm({ ...form, channel: v })} />
 
           <TouchableOpacity style={styles.btnBlock} onPress={saveSale}>
             <Text style={styles.btnBlockText}>Save Sale</Text>
@@ -174,7 +177,7 @@ export default function Sales({ params }) {
   );
 }
 
-function Field({ label, ...props }) {
+function Field({ label, styles, ...props }) {
   return (
     <View>
       <Text style={styles.label}>{label}</Text>
@@ -183,23 +186,26 @@ function Field({ label, ...props }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream, padding: 14 },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink, marginBottom: 2 },
-  desc: { fontSize: 13, color: colors.inkSoft, marginBottom: 16 },
-  btnBlock: { backgroundColor: colors.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
-  btnBlockText: { color: colors.paper, fontWeight: "600", fontSize: 12, textTransform: "uppercase" },
-  card: { backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 16, marginBottom: 14 },
-  label: { fontSize: 10, color: colors.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600" },
-  input: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 9, fontSize: 14, backgroundColor: colors.paper, color: colors.ink },
-  pickerWrap: { borderWidth: 1, borderColor: colors.line, borderRadius: 8, backgroundColor: colors.paper },
-  sectionDivider: { fontSize: 10.5, color: colors.inkSoft, textTransform: "uppercase", letterSpacing: 1, marginTop: 16, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: colors.line, paddingBottom: 6 },
-  scanNote: { fontSize: 11.5, color: colors.inkSoft, marginTop: 6 },
-  emptyNote: { fontSize: 13, color: colors.inkSoft, textAlign: "center", paddingVertical: 14 },
-  saleCard: { flexDirection: "row", justifyContent: "space-between", backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: radius, padding: 14, marginBottom: 10 },
-  saleProduct: { fontSize: 15, fontWeight: "600", color: colors.ink },
-  saleSub: { fontSize: 11.5, color: colors.inkSoft, marginTop: 2 },
-  saleRevenue: { fontFamily: "monospace", fontSize: 14, color: colors.ink, fontWeight: "600" },
-  iconBtn: { fontSize: 15, color: colors.inkSoft },
-  iconBtnDel: { fontSize: 18, color: colors.clay },
-});
+function makeStyles(theme) {
+  const c = theme.colors, d = theme.density, f = theme.fontFamily;
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.cream, padding: d.screenPadding },
+    title: { fontSize: 20 * d.fontScale, fontWeight: "700", color: c.ink, marginBottom: 2, fontFamily: f },
+    desc: { fontSize: 13 * d.fontScale, color: c.inkSoft, marginBottom: 16, fontFamily: f },
+    btnBlock: { backgroundColor: c.ink, borderRadius: 9, paddingVertical: 12, alignItems: "center", marginBottom: 12 },
+    btnBlockText: { color: c.paper, fontWeight: "600", fontSize: 12 * d.fontScale, textTransform: "uppercase", fontFamily: f },
+    card: { backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.cardMargin },
+    label: { fontSize: 10 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", marginTop: 10, marginBottom: 4, fontWeight: "600", fontFamily: f },
+    input: { borderWidth: 1, borderColor: c.line, borderRadius: 8, padding: 9, fontSize: 14 * d.fontScale, backgroundColor: c.paper, color: c.ink, fontFamily: f },
+    pickerWrap: { borderWidth: 1, borderColor: c.line, borderRadius: 8, backgroundColor: c.paper },
+    sectionDivider: { fontSize: 10.5 * d.fontScale, color: c.inkSoft, textTransform: "uppercase", letterSpacing: 1, marginTop: 16, marginBottom: 6, borderBottomWidth: 1, borderBottomColor: c.line, paddingBottom: 6, fontFamily: f },
+    scanNote: { fontSize: 11.5 * d.fontScale, color: c.inkSoft, marginTop: 6, fontFamily: f },
+    emptyNote: { fontSize: 13 * d.fontScale, color: c.inkSoft, textAlign: "center", paddingVertical: 14, fontFamily: f },
+    saleCard: { flexDirection: "row", justifyContent: "space-between", backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, borderRadius: radius, padding: d.cardPadding, marginBottom: d.gap },
+    saleProduct: { fontSize: 15 * d.fontScale, fontWeight: "600", color: c.ink, fontFamily: f },
+    saleSub: { fontSize: 11.5 * d.fontScale, color: c.inkSoft, marginTop: 2, fontFamily: f },
+    saleRevenue: { fontFamily: "monospace", fontSize: 14 * d.fontScale, color: c.ink, fontWeight: "600" },
+    iconBtn: { fontSize: 15, color: c.inkSoft },
+    iconBtnDel: { fontSize: 18, color: c.clay },
+  });
+}
